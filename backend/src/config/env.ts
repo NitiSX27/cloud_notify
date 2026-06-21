@@ -12,6 +12,8 @@ const envSchema = z.object({
   AWS_S3_BUCKET: z.string().min(1),
   AWS_ACCESS_KEY_ID: z.string().optional(),
   AWS_SECRET_ACCESS_KEY: z.string().optional(),
+  AWS_SQS_QUEUE_URL: z.string().optional(),
+  SES_FROM_EMAIL: z.string().optional(),
 
   JWT_ACCESS_SECRET: z.string().min(16),
   JWT_REFRESH_SECRET: z.string().min(16),
