@@ -2,12 +2,22 @@ import { Router } from "express";
 import { prisma } from "../lib/prisma";
 import { authenticate, type AuthRequest } from "../middleware/auth";
 import { authorize } from "../middleware/roles";
+import { redis } from "../lib/redis";
 
 const router = Router();
 
 // Admin dashboard statistics
 router.get("/stats", authenticate, authorize("ADMIN"), async (req: AuthRequest, res, next) => {
   try {
+    // Check cache first
+    const cacheKey = "admin:stats";
+    if (redis) {
+      const cachedStats = await redis.get(cacheKey);
+      if (cachedStats) {
+        return res.json(JSON.parse(cachedStats));
+      }
+    }
+
     // Ticket statistics
     const totalTickets = await prisma.ticket.count();
 
@@ -124,7 +134,7 @@ router.get("/stats", authenticate, authorize("ADMIN"), async (req: AuthRequest, 
           }, 0) / resolvedTicketsWithDates.length
         : 0;
 
-    return res.json({
+    const payload = {
       tickets: {
         total: totalTickets,
         status: {
@@ -160,7 +170,14 @@ router.get("/stats", authenticate, authorize("ADMIN"), async (req: AuthRequest, 
         name: cat.category,
         count: cat._count,
       })),
-    });
+    };
+
+    // Save to cache (e.g. 60 seconds)
+    if (redis) {
+      await redis.setEx(cacheKey, 60, JSON.stringify(payload));
+    }
+
+    return res.json(payload);
   } catch (error) {
     next(error);
   }
