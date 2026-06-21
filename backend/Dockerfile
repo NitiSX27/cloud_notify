@@ -10,6 +10,9 @@ COPY . .
 
 RUN npm run build
 
+# Install pm2 globally
+RUN npm install -g pm2
+
 EXPOSE 8080
 
-CMD ["npm","start"]
+CMD ["pm2-runtime", "ecosystem.config.js"]
