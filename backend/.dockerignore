@@ -1,0 +1,11 @@
+.env
+.env.*
+node_modules
+dist
+npm-debug.log
+dev-server.out.log
+dev-server.err.log
+.git
+.gitignore
+Dockerfile
+docker-compose.yml

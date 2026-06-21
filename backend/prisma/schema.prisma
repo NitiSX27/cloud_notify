@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  CITIZEN
+  OFFICER
+  ADMIN
+}
+
+enum TicketStatus {
+  OPEN
+  ASSIGNED
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String   @default("")
+  role         Role     @default(CITIZEN)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  refreshTokens RefreshToken[]
+  tickets       Ticket[]       @relation("CreatedTickets")
+  assignedTickets TicketAssignment[] @relation("AssignedTickets")
+  comments      TicketComment[]
+  notifications Notification[]
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Ticket {
+  id            String         @id @default(cuid())
+  title         String
+  description   String
+  category      String
+  status        TicketStatus   @default(OPEN)
+  priority      TicketPriority @default(MEDIUM)
+  imageUrl      String?
+  locationText  String?
+  createdById   String
+  createdBy     User           @relation("CreatedTickets", fields: [createdById], references: [id])
+  assignments   TicketAssignment[]
+  comments      TicketComment[]
+  history       TicketStatusHistory[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model TicketAssignment {
+  id         String   @id @default(cuid())
+  ticketId   String
+  officerId  String
+  ticket     Ticket   @relation(fields: [ticketId], references: [id])
+  officer    User     @relation("AssignedTickets", fields: [officerId], references: [id])
+  assignedAt DateTime @default(now())
+}
+
+model TicketComment {
+  id        String   @id @default(cuid())
+  ticketId  String
+  userId    String
+  comment   String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model TicketStatusHistory {
+  id        String       @id @default(cuid())
+  ticketId  String
+  oldStatus TicketStatus
+  newStatus TicketStatus
+  changedBy String
+  ticket    Ticket       @relation(fields: [ticketId], references: [id])
+  createdAt DateTime     @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
