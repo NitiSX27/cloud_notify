@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
+import { logger } from "./lib/logger";
 
 import healthRoutes from "./routes/health";
 import uploadRoutes from "./routes/uploads";
@@ -27,7 +28,7 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.use((err: any, _req: any, res: any, _next: any) => {
-  console.error(err);
+  logger.error(err);
   res.status(500).json({
     message: "Internal server error"
   });

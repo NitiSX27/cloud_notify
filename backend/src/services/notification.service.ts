@@ -1,6 +1,7 @@
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import { env } from "../config/env";
 import { prisma } from "../lib/prisma";
+import { logger } from "../lib/logger";
 
 const sqs = new SQSClient({ region: env.AWS_REGION });
 
@@ -40,7 +41,7 @@ export async function createNotification(
 
     return notification;
   } catch (error) {
-    console.error("Error creating notification:", error);
+    logger.error("Error creating notification:", error);
     throw error;
   }
 }
@@ -56,7 +57,7 @@ export async function markAsRead(notificationId: string) {
       },
     });
   } catch (error) {
-    console.error("Error marking notification as read:", error);
+    logger.error("Error marking notification as read:", error);
     throw error;
   }
 }
@@ -72,7 +73,7 @@ export async function getUserNotifications(userId: string) {
       },
     });
   } catch (error) {
-    console.error("Error fetching notifications:", error);
+    logger.error("Error fetching notifications:", error);
     throw error;
   }
 }
@@ -86,7 +87,7 @@ export async function getUnreadCount(userId: string) {
       },
     });
   } catch (error) {
-    console.error("Error getting unread count:", error);
+    logger.error("Error getting unread count:", error);
     throw error;
   }
 }

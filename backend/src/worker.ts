@@ -1,6 +1,7 @@
 import { SQSClient, ReceiveMessageCommand, DeleteMessageCommand } from "@aws-sdk/client-sqs";
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 import { env } from "./config/env";
+import { logger } from "./lib/logger";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -12,10 +13,10 @@ async function processMessage(message: any) {
   if (!message.Body) return;
   const payload = JSON.parse(message.Body);
 
-  console.log(`Processing notification for ${payload.email}...`);
+  logger.info(`Processing notification for ${payload.email}...`);
 
   if (!env.SES_FROM_EMAIL) {
-    console.warn("SES_FROM_EMAIL not configured. Skipping email send.");
+    logger.warn("SES_FROM_EMAIL not configured. Skipping email send.");
     return;
   }
 
@@ -49,16 +50,16 @@ async function processMessage(message: any) {
   };
 
   await ses.send(new SendEmailCommand(emailParams));
-  console.log(`Email successfully sent to ${payload.email}`);
+  logger.info(`Email successfully sent to ${payload.email}`);
 }
 
 async function pollQueue() {
   if (!env.AWS_SQS_QUEUE_URL) {
-    console.error("AWS_SQS_QUEUE_URL is not set. Worker cannot start.");
+    logger.error("AWS_SQS_QUEUE_URL is not set. Worker cannot start.");
     process.exit(1);
   }
 
-  console.log("Worker started. Listening for messages...");
+  logger.info("Worker started. Listening for messages...");
 
   while (true) {
     try {
@@ -83,13 +84,13 @@ async function pollQueue() {
               })
             );
           } catch (err) {
-            console.error("Error processing individual message:", err);
+            logger.error("Error processing individual message:", err);
             // Don't delete, let it go to Dead Letter Queue (DLQ) if configured
           }
         }
       }
     } catch (err) {
-      console.error("Error polling SQS:", err);
+      logger.error("Error polling SQS:", err);
       // Wait before retrying to prevent throttling
       await new Promise((resolve) => setTimeout(resolve, 5000));
     }
