@@ -13,7 +13,7 @@ env:
   ECR_REPOSITORY: community-backend
   ECS_SERVICE: community-backend-task-service-bawq6q54
   # NOTE: Replace with your actual ECS Cluster name if it differs!
-  ECS_CLUSTER: community-cluster 
+  ECS_CLUSTER: community-platform-cluster1 
 
 jobs:
   deploy:
