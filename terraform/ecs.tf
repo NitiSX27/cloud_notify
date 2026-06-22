@@ -181,7 +181,8 @@ resource "aws_iam_policy" "ecs_task_custom_policy" {
         Effect = "Allow"
         Action = [
           "logs:CreateLogStream",
-          "logs:PutLogEvents"
+          "logs:PutLogEvents",
+          "logs:DescribeLogStreams"
         ]
         Resource = "*"
       }
